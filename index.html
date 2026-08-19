@@ -141,18 +141,76 @@
         }
     }
 
-    // The Export Function
-    window.exportCollection = () => {
-    // Convert your collection object into a formatted JSON string
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(collection, null, 2));
-  
-    // Create a hidden link, trigger the download, and remove it
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "collection.json");
-    document.body.appendChild(downloadAnchorNode); // Required for Firefox
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+    // Replace with your actual GitHub username and repo name
+    const GITHUB_REPO = "leitaonerd/checklist2"; 
+
+    window.exportCollection = async () => {
+    // 1. Get or request the token
+    let token = localStorage.getItem('gh_pat_token');
+    if (!token) {
+        token = prompt("🔒 Enter your GitHub Personal Access Token to sync:");
+        if (!token) return; // User cancelled
+        localStorage.setItem('gh_pat_token', token);
+    }
+
+    // Change button text to show activity
+    const exportBtn = document.getElementById('export-btn');
+    exportBtn.innerText = "SYNCING...";
+
+    try {
+        const fileUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/collection.json`;
+        
+        // 2. We must get the file's current "SHA" hash first. GitHub requires this to overwrite a file.
+        const getResponse = await fetch(fileUrl, {
+        headers: { "Authorization": `token ${token}` }
+        });
+        
+        let fileSha = null;
+        if (getResponse.ok) {
+        const data = await getResponse.json();
+        fileSha = data.sha;
+        } else if (getResponse.status !== 404) {
+        throw new Error("Could not fetch file SHA.");
+        }
+
+        // 3. Prepare the new JSON payload (GitHub requires Base64 encoding)
+        const jsonString = JSON.stringify(collection, null, 2);
+        // Safe Base64 encoding for browsers that handles special characters properly
+        const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
+
+        // 4. Send the PUT request to commit the file
+        const putResponse = await fetch(fileUrl, {
+        method: "PUT",
+        headers: {
+            "Authorization": `token ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            message: "Sync collection state via Web App",
+            content: base64Content,
+            sha: fileSha // Omit if creating the file for the very first time
+        })
+        });
+
+        if (putResponse.ok) {
+        exportBtn.innerText = "SYNCED ✓";
+        setTimeout(() => exportBtn.innerText = "EXPORTAR", 2000);
+        } else {
+        const errorData = await putResponse.json();
+        // If the token is invalid or expired, clear it so the user is prompted again next time
+        if (errorData.message === "Bad credentials") {
+            localStorage.removeItem('gh_pat_token');
+            alert("Token invalid or expired. Please click export again to enter a new token.");
+        } else {
+            alert(`GitHub API Error: ${errorData.message}`);
+        }
+        exportBtn.innerText = "EXPORTAR";
+        }
+    } catch (error) {
+        console.error(error);
+        alert("Network error while trying to sync.");
+        exportBtn.innerText = "EXPORTAR";
+    }
     };
 
     function renderTabs() {
