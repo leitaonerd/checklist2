@@ -276,20 +276,27 @@
       
       let sortedCards = [];
       uniqueSets.forEach(setTag => {
-        // Get all cards in this set
         let cardsInSet = filteredCards.filter(c => c.tags[1] === setTag);
         
-        // --- NEW: Force Numerical Order ---
+        // --- THE BULLETPROOF SORT ---
         cardsInSet.sort((a, b) => {
-          // Extracts the print number from the eyebrow label (e.g. gets "238" from "DEDENNE — PAL — 238/193")
-          // It safely ignores letters in promo cards like "TG04" by grabbing just the digits
-          const getNum = (label) => {
-            const match = label.split('—').pop().match(/\d+/);
-            return match ? parseInt(match[0], 10) : 0;
+          // 1. If your JSON has the isolated 'cardNumber' property we added, use it directly!
+          if (a.cardNumber && b.cardNumber) {
+            return a.cardNumber.localeCompare(b.cardNumber, undefined, { numeric: true });
+          }
+
+          // 2. Fallback: Split the label by ANY possible divider (bullet, hyphen, or em-dash)
+          const getNumStr = (label) => {
+            const parts = label.split(/[-•—]/);
+            // Grab the very last piece (e.g., " 238/193") and trim the spaces
+            return parts[parts.length - 1].trim(); 
           };
-          return getNum(a.eyebrowLabel) - getNum(b.eyebrowLabel);
+          
+          // localeCompare with 'numeric: true' naturally understands how to sort 
+          // fractional strings like "12/100" vs "2/100" and promo strings like "TG04".
+          return getNumStr(a.eyebrowLabel).localeCompare(getNumStr(b.eyebrowLabel), undefined, { numeric: true });
         });
-        // ----------------------------------
+        // ----------------------------
 
         sortedCards.push(...cardsInSet);
       });
