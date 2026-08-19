@@ -24,7 +24,7 @@
             'charcoal-note': '#333333',
           },
           fontFamily: {
-            'bwgradual': ['Inter', 'sans-serif'], // Fallback mapping
+            'bwgradual': ['Inter', 'sans-serif'], 
           }
         }
       }
@@ -32,13 +32,10 @@
   </script>
   
   <style>
-    /* Global Background and Font Feature Settings */
     body {
       background-color: #f6f1eb;
       font-feature-settings: "cv11", "ss01", "tnum";
     }
-    
-    /* Hide scrollbar for the tab bar but keep functionality */
     .no-scrollbar::-webkit-scrollbar {
       display: none;
     }
@@ -52,11 +49,11 @@
 
   <!-- Top Navigation Bar -->
   <header class="w-full border-b border-walnut-ink h-[60px] md:h-[80px] flex items-center justify-between px-5">
-    <div class="font-bwgradual font-medium text-[18px] underline decoration-1 underline-offset-4">checklist</div>
+    <a href="#" class="font-bwgradual font-medium text-[18px] underline decoration-1 underline-offset-4 hover:opacity-70 transition-opacity">checklist</a>
     <div class="font-bwgradual font-regular text-[12px] tracking-[0.083em] uppercase hidden md:block">abas</div>
     <div class="font-bwgradual font-regular text-[12px] tracking-[0.083em] uppercase flex gap-[20px] md:gap-[30px]">
-      <a href="#" class="hover:opacity-70">trocas</a>
-      <a href="#" class="hover:opacity-70">contato</a>
+      <button onclick="exportCollection()" class="hover:opacity-70 transition-opacity uppercase tracking-[0.083em]">exportar</button>
+      <a href="#" class="hover:opacity-70 transition-opacity">contato</a>
     </div>
   </header>
 
@@ -68,14 +65,26 @@
   <!-- Main Content Area -->
   <main class="max-w-[1600px] w-full mx-auto px-5 py-[60px] md:py-[120px] flex-grow">
     
-    <!-- Section Eyebrow & Display Heading -->
-    <div class="mb-[60px] md:mb-[120px]">
-      <span id="eyebrow" class="block font-bwgradual font-medium text-[10px] tracking-[0.1em] uppercase text-walnut-ink mb-4">
-        Collection Focus
-      </span>
-      <h2 id="display-title" class="font-bwgradual font-medium text-[40px] md:text-[60px] leading-[1.2] tracking-[-3.36px] uppercase text-walnut-ink">
-        Loading...
-      </h2>
+    <!-- Header Block (Eyebrow, Title, Stats, and Sort Action) -->
+    <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-[60px] md:mb-[120px]">
+      <div>
+        <span id="eyebrow" class="block font-bwgradual font-medium text-[10px] tracking-[0.1em] uppercase text-walnut-ink mb-4">
+          Collection Focus
+        </span>
+        <h2 id="display-title" class="font-bwgradual font-medium text-[40px] md:text-[60px] leading-[1.2] tracking-[-3.36px] uppercase text-walnut-ink">
+          Loading...
+        </h2>
+        <div id="stats" class="font-bwgradual font-regular text-[12px] tracking-[0.083em] uppercase text-charcoal-note mt-4">
+          0/0 COLLECTED — 0 FOIL
+        </div>
+      </div>
+
+      <!-- Pill Action Button for Sorting -->
+      <button onclick="toggleSort()" id="sort-btn" class="px-5 py-2 border border-walnut-ink rounded-full hover:bg-walnut-ink hover:text-linen-canvas transition-colors flex-shrink-0">
+        <span class="font-bwgradual font-medium text-[10px] tracking-[0.1em] uppercase">
+          ORDER: OLDEST FIRST
+        </span>
+      </button>
     </div>
 
     <!-- 6-Column Card Grid -->
@@ -86,7 +95,7 @@
   </main>
 
   <script>
-    // Configuration
+    // Configuration & State
     const tabs = [
       'Sekio', 'Asako Ito', 'Ooyama', 'Ryoma Uratsuka', 
       'Yuka Morii', 'Tomokazu Komiya', 
@@ -95,12 +104,18 @@
     
     let db = [];
     let activeTab = tabs[0];
+    let sortAscending = true; // true = Oldest to Newest
+    
+    // Load local storage collection (0 = None, 1 = Normal, 2 = Foil)
+    let collection = JSON.parse(localStorage.getItem('oakame_pokemon_collection')) || {};
 
     // DOM Elements
     const tabBar = document.getElementById('tab-bar');
     const gridContainer = document.getElementById('grid-container');
     const displayTitle = document.getElementById('display-title');
     const eyebrow = document.getElementById('eyebrow');
+    const statsEl = document.getElementById('stats');
+    const sortBtnText = document.querySelector('#sort-btn span');
 
     // Initialization
     async function init() {
@@ -115,7 +130,6 @@
       }
     }
 
-    // Render the Tab Bar
     function renderTabs() {
       tabBar.innerHTML = tabs.map(tab => {
         const isActive = tab === activeTab;
@@ -134,23 +148,32 @@
       }).join('');
     }
 
-    // Handle Tab Switching
     window.setActiveTab = (tab) => {
       activeTab = tab;
       renderTabs();
       updateView();
     };
 
-    // Filter and Render Cards
+    window.toggleSort = () => {
+      sortAscending = !sortAscending;
+      sortBtnText.innerText = sortAscending ? 'ORDER: OLDEST FIRST' : 'ORDER: NEWEST FIRST';
+      updateView();
+    };
+
+    window.toggleCardState = (cardId) => {
+      const currentState = collection[cardId] || 0;
+      collection[cardId] = (currentState + 1) % 3; // Cycles 0 -> 1 -> 2 -> 0
+      localStorage.setItem('oakame_pokemon_collection', JSON.stringify(collection));
+      updateView(); // Re-render the grid to show new state
+    };
+
     function updateView() {
-      // Update the monument text
       displayTitle.innerText = activeTab;
-      
       const isArtist = ['Sekio', 'Asako Ito', 'Ooyama', 'Ryoma Uratsuka', 'Yuka Morii', 'Tomokazu Komiya'].includes(activeTab);
       eyebrow.innerText = isArtist ? "Artist Focus" : "Species Focus";
 
-      // Filter logic handling the special Tandemaus/Maushold combo tab
-      const filteredCards = db.filter(card => {
+      // 1. Filter
+      let filteredCards = db.filter(card => {
         const query = activeTab.toLowerCase();
         const tagsLower = card.tags.map(t => t.toLowerCase());
         const titleLower = card.displayTitle.toLowerCase();
@@ -159,27 +182,81 @@
           return titleLower.includes('tandemaus') || titleLower.includes('maushold') || 
                  tagsLower.includes('tandemaus') || tagsLower.includes('maushold');
         }
-        
         return tagsLower.includes(query) || titleLower.includes(query);
       });
 
-      // Render the Grid
-      gridContainer.innerHTML = filteredCards.map(card => `
-        <article class="aspect-square border border-walnut-ink bg-linen-canvas flex items-center justify-center relative group">
-          <img 
-            src="${card.imageUrl}" 
-            alt="${card.displayTitle}"
-            loading="lazy"
-            class="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105" 
-          />
-          <!-- Hover label for context -->
-          <div class="absolute bottom-0 w-full border-t border-walnut-ink bg-linen-canvas p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <span class="block text-center font-bwgradual font-medium text-[10px] tracking-[0.1em] uppercase text-walnut-ink">
-              ${card.eyebrowLabel}
-            </span>
-          </div>
-        </article>
-      `).join('');
+      // 2. Sort Logic (Reverses sets, but keeps numerical order within the set)
+      // Limitless JSON outputs chronologically by default
+      const uniqueSets = [...new Set(filteredCards.map(c => c.tags[1]))]; 
+      if (!sortAscending) {
+        uniqueSets.reverse(); // Newest sets first
+      }
+      
+      let sortedCards = [];
+      uniqueSets.forEach(setTag => {
+        // Appends the cards of each set in their original (ascending number) order
+        sortedCards.push(...filteredCards.filter(c => c.tags[1] === setTag));
+      });
+      filteredCards = sortedCards;
+
+      // 3. Stats Calculation
+      let total = filteredCards.length;
+      let collected = 0;
+      let foil = 0;
+
+      // 4. Render Grid
+      gridContainer.innerHTML = filteredCards.map(card => {
+        const state = collection[card.id] || 0;
+        
+        if (state > 0) collected++;
+        if (state === 2) foil++;
+
+        // Determine Oakâme Styling based on collection state
+        let bgClass = "bg-linen-canvas";
+        let hoverLabelBg = "bg-linen-canvas";
+        let textHover = "text-walnut-ink";
+        let borderHover = "border-walnut-ink";
+        let statusBadge = "";
+
+        if (state === 1) {
+          // Normal Collected: Subtle background tint
+          bgClass = "bg-[#d9cfc1]"; 
+        } else if (state === 2) {
+          // Foil Collected: Heavy Walnut Ink inversion
+          bgClass = "bg-walnut-ink";
+          hoverLabelBg = "bg-walnut-ink";
+          textHover = "text-linen-canvas";
+          borderHover = "border-linen-canvas";
+          statusBadge = `
+            <div class="absolute top-3 right-3 border border-linen-canvas text-linen-canvas px-2 py-1">
+              <span class="block font-bwgradual font-medium text-[8px] tracking-[0.1em] uppercase">Foil</span>
+            </div>
+          `;
+        }
+
+        return `
+          <article onclick="toggleCardState('${card.id}')" class="aspect-square border border-walnut-ink ${bgClass} flex items-center justify-center relative group cursor-pointer transition-colors duration-300">
+            <img 
+              src="${card.imageUrl}" 
+              alt="${card.displayTitle}"
+              loading="lazy"
+              class="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105" 
+            />
+            
+            ${statusBadge}
+
+            <!-- Hover label -->
+            <div class="absolute bottom-0 w-full border-t ${borderHover} ${hoverLabelBg} p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span class="block text-center font-bwgradual font-medium text-[10px] tracking-[0.1em] uppercase ${textHover}">
+                ${card.eyebrowLabel}
+              </span>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      // Update Stats UI
+      statsEl.innerText = `${collected}/${total} COLLECTED — ${foil} FOIL`;
     }
 
     // Boot
