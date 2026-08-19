@@ -81,7 +81,10 @@ def scrape_limitless():
                 if number_link is None:
                     continue
                 card_number = number_link.text.strip()
-                
+
+                # Full set number with denominator (e.g., "238/193")
+                card_number_full = cells[1].text.strip().replace(" ", "")
+
                 card_id = f"{raw_name}-{set_code}-{card_number}".replace(" ", "-").lower()
                 
                 # Deduplication & Tag Merging Logic
@@ -93,7 +96,7 @@ def scrape_limitless():
                     # First time seeing this card, create the full object
                     scraped_cards[card_id] = {
                         "id": card_id,
-                        "eyebrowLabel": f"{raw_name.upper()} • {set_name.upper()} • {card_number.upper()}",
+                        "eyebrowLabel": f"{raw_name.upper()} • {set_name.upper()} • {card_number_full.upper()}",
                         "displayTitle": raw_name,
                         "imageUrl": image_url,
                         "tags": [tab_name, set_code.upper()]
