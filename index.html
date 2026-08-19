@@ -141,6 +141,20 @@
         }
     }
 
+    // The Export Function
+    window.exportCollection = () => {
+    // Convert your collection object into a formatted JSON string
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(collection, null, 2));
+  
+    // Create a hidden link, trigger the download, and remove it
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "collection.json");
+    document.body.appendChild(downloadAnchorNode); // Required for Firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    };
+
     function renderTabs() {
       tabBar.innerHTML = tabs.map(tab => {
         const isActive = tab === activeTab;
@@ -269,20 +283,6 @@
       // Update Stats UI
       statsEl.innerText = `${collected}/${total} COLLECTED — ${foil} FOIL`;
     }
-
-    // The Export Function
-    window.exportCollection = () => {
-    // Convert your collection object into a formatted JSON string
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(collection, null, 2));
-  
-    // Create a hidden link, trigger the download, and remove it
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", "collection.json");
-    document.body.appendChild(downloadAnchorNode); // Required for Firefox
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-    };
 
     // Boot
     init();
