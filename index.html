@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oakâme × Pokémon</title>
+  
+  <!-- BwGradual Alternative: Using Inter with CV11 for that clean geometric look -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Oakâme Tailwind Configuration -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'walnut-ink': '#403a34',
+            'linen-canvas': '#f6f1eb',
+            'charcoal-note': '#333333',
+          },
+          fontFamily: {
+            'bwgradual': ['Inter', 'sans-serif'], // Fallback mapping
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    /* Global Background and Font Feature Settings */
+    body {
+      background-color: #f6f1eb;
+      font-feature-settings: "cv11", "ss01", "tnum";
+    }
+    
+    /* Hide scrollbar for the tab bar but keep functionality */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
+</head>
+<body class="text-walnut-ink min-h-screen flex flex-col">
+
+  <!-- Top Navigation Bar -->
+  <header class="w-full border-b border-walnut-ink h-[60px] md:h-[80px] flex items-center justify-between px-5">
+    <div class="font-bwgradual font-medium text-[18px] underline decoration-1 underline-offset-4">oakâme</div>
+    <div class="font-bwgradual font-regular text-[12px] tracking-[0.083em] uppercase hidden md:block">Products</div>
+    <div class="font-bwgradual font-regular text-[12px] tracking-[0.083em] uppercase flex gap-[20px] md:gap-[30px]">
+      <a href="#" class="hover:opacity-70">En Stock</a>
+      <a href="#" class="hover:opacity-70">Lookbook</a>
+    </div>
+  </header>
+
+  <!-- Bordered Square Tab Bar -->
+  <nav id="tab-bar" class="w-full border-b border-walnut-ink flex overflow-x-auto no-scrollbar bg-linen-canvas">
+    <!-- Tabs injected via JS -->
+  </nav>
+
+  <!-- Main Content Area -->
+  <main class="max-w-[1600px] w-full mx-auto px-5 py-[60px] md:py-[120px] flex-grow">
+    
+    <!-- Section Eyebrow & Display Heading -->
+    <div class="mb-[60px] md:mb-[120px]">
+      <span id="eyebrow" class="block font-bwgradual font-medium text-[10px] tracking-[0.1em] uppercase text-walnut-ink mb-4">
+        Collection Focus
+      </span>
+      <h2 id="display-title" class="font-bwgradual font-medium text-[40px] md:text-[60px] leading-[1.2] tracking-[-3.36px] uppercase text-walnut-ink">
+        Loading...
+      </h2>
+    </div>
+
+    <!-- 6-Column Card Grid -->
+    <div id="grid-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-[20px]">
+      <!-- Cards injected via JS -->
+    </div>
+    
+  </main>
+
+  <script>
+    // Configuration
+    const tabs = [
+      'Sekio', 'Asako Ito', 'Ooyama', 'Ryoma Uratsuka', 
+      'Yuka Morii', 'Tomokazu Komiya', 
+      'Clefairy', 'Dedenne', 'Wooper', 'Tandemaus & Maushold'
+    ];
+    
+    let db = [];
+    let activeTab = tabs[0];
+
+    // DOM Elements
+    const tabBar = document.getElementById('tab-bar');
+    const gridContainer = document.getElementById('grid-container');
+    const displayTitle = document.getElementById('display-title');
+    const eyebrow = document.getElementById('eyebrow');
+
+    // Initialization
+    async function init() {
+      try {
+        const response = await fetch('pokemon_db.json');
+        db = await response.json();
+        renderTabs();
+        updateView();
+      } catch (error) {
+        console.error('Error loading local DB:', error);
+        displayTitle.innerText = "Error Loading Database";
+      }
+    }
+
+    // Render the Tab Bar
+    function renderTabs() {
+      tabBar.innerHTML = tabs.map(tab => {
+        const isActive = tab === activeTab;
+        const baseClasses = "px-6 py-4 border-r border-walnut-ink flex-shrink-0 cursor-pointer transition-colors";
+        const stateClasses = isActive 
+          ? "bg-walnut-ink text-linen-canvas" 
+          : "hover:bg-walnut-ink hover:text-linen-canvas text-walnut-ink";
+          
+        return `
+          <button onclick="setActiveTab('${tab}')" class="${baseClasses} ${stateClasses}">
+            <span class="font-bwgradual font-medium text-[12px] tracking-[0.083em] uppercase">
+              ${tab}
+            </span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    // Handle Tab Switching
+    window.setActiveTab = (tab) => {
+      activeTab = tab;
+      renderTabs();
+      updateView();
+    };
+
+    // Filter and Render Cards
+    function updateView() {
+      // Update the monument text
+      displayTitle.innerText = activeTab;
+      
+      const isArtist = ['Sekio', 'Asako Ito', 'Ooyama', 'Ryoma Uratsuka', 'Yuka Morii', 'Tomokazu Komiya'].includes(activeTab);
+      eyebrow.innerText = isArtist ? "Artist Focus" : "Species Focus";
+
+      // Filter logic handling the special Tandemaus/Maushold combo tab
+      const filteredCards = db.filter(card => {
+        const query = activeTab.toLowerCase();
+        const tagsLower = card.tags.map(t => t.toLowerCase());
+        const titleLower = card.displayTitle.toLowerCase();
+        
+        if (query === 'tandemaus & maushold') {
+          return titleLower.includes('tandemaus') || titleLower.includes('maushold') || 
+                 tagsLower.includes('tandemaus') || tagsLower.includes('maushold');
+        }
+        
+        return tagsLower.includes(query) || titleLower.includes(query);
+      });
+
+      // Render the Grid
+      gridContainer.innerHTML = filteredCards.map(card => `
+        <article class="aspect-square border border-walnut-ink bg-linen-canvas flex items-center justify-center relative group">
+          <img 
+            src="${card.imageUrl}" 
+            alt="${card.displayTitle}"
+            loading="lazy"
+            class="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105" 
+          />
+          <!-- Hover label for context -->
+          <div class="absolute bottom-0 w-full border-t border-walnut-ink bg-linen-canvas p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <span class="block text-center font-bwgradual font-medium text-[10px] tracking-[0.1em] uppercase text-walnut-ink">
+              ${card.eyebrowLabel}
+            </span>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    // Boot
+    init();
+  </script>
+</body>
+</html>
