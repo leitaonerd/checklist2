@@ -269,7 +269,6 @@
       });
 
       // 2. Sort Logic (Reverses sets, but keeps numerical order within the set)
-      // Limitless JSON outputs chronologically by default
       const uniqueSets = [...new Set(filteredCards.map(c => c.tags[1]))]; 
       if (!sortAscending) {
         uniqueSets.reverse(); // Newest sets first
@@ -277,8 +276,22 @@
       
       let sortedCards = [];
       uniqueSets.forEach(setTag => {
-        // Appends the cards of each set in their original (ascending number) order
-        sortedCards.push(...filteredCards.filter(c => c.tags[1] === setTag));
+        // Get all cards in this set
+        let cardsInSet = filteredCards.filter(c => c.tags[1] === setTag);
+        
+        // --- NEW: Force Numerical Order ---
+        cardsInSet.sort((a, b) => {
+          // Extracts the print number from the eyebrow label (e.g. gets "238" from "DEDENNE — PAL — 238/193")
+          // It safely ignores letters in promo cards like "TG04" by grabbing just the digits
+          const getNum = (label) => {
+            const match = label.split('—').pop().match(/\d+/);
+            return match ? parseInt(match[0], 10) : 0;
+          };
+          return getNum(a.eyebrowLabel) - getNum(b.eyebrowLabel);
+        });
+        // ----------------------------------
+
+        sortedCards.push(...cardsInSet);
       });
       filteredCards = sortedCards;
 
