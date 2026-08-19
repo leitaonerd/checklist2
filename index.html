@@ -107,7 +107,7 @@
     let sortAscending = true; // true = Oldest to Newest
     
     // Load local storage collection (0 = None, 1 = Normal, 2 = Foil)
-    let collection = JSON.parse(localStorage.getItem('oakame_pokemon_collection')) || {};
+    let collection = {};
 
     // DOM Elements
     const tabBar = document.getElementById('tab-bar');
@@ -119,15 +119,26 @@
 
     // Initialization
     async function init() {
-      try {
-        const response = await fetch('pokemon_db.json');
-        db = await response.json();
+    try {
+        // Fetch both the Limitless catalog and your personal collection state
+        const [dbResponse, colResponse] = await Promise.all([
+        fetch('pokemon_db.json'),
+        fetch('collection.json').catch(() => ({ json: () => ({}) })) // Fails safely if collection.json doesn't exist yet
+        ]);
+
+        db = await dbResponse.json();
+        const serverCollection = await colResponse.json();
+        
+        // Merge server state with any newer local clicks
+        const localCollection = JSON.parse(localStorage.getItem('oakame_pokemon_collection')) || {};
+        collection = { ...serverCollection, ...localCollection };
+
         renderTabs();
         updateView();
-      } catch (error) {
-        console.error('Error loading local DB:', error);
+    } catch (error) {
+        console.error('Error loading databases:', error);
         displayTitle.innerText = "Error Loading Database";
-      }
+        }
     }
 
     function renderTabs() {
@@ -258,6 +269,20 @@
       // Update Stats UI
       statsEl.innerText = `${collected}/${total} COLLECTED — ${foil} FOIL`;
     }
+
+    // The Export Function
+    window.exportCollection = () => {
+    // Convert your collection object into a formatted JSON string
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(collection, null, 2));
+  
+    // Create a hidden link, trigger the download, and remove it
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href", dataStr);
+    downloadAnchorNode.setAttribute("download", "collection.json");
+    document.body.appendChild(downloadAnchorNode); // Required for Firefox
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    };
 
     // Boot
     init();
