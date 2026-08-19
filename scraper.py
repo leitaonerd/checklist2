@@ -64,15 +64,23 @@ def scrape_limitless():
                 
                 # Card name is in the 3rd <td> as an <a> tag
                 cells = row.find_all("td")
-                raw_name = cells[2].find("a").text.strip()
+                name_link = cells[2].find("a")
+                if name_link is None:
+                    continue
+                raw_name = name_link.text.strip()
                 
                 # Set info: span.card-set has the set code as text and full name in data-tooltip
                 set_span = row.find("span", class_="card-set")
+                if set_span is None:
+                    continue
                 set_code = set_span.text.strip()
-                set_name = set_span.get("data-tooltip", set_code)
+                set_name = str(set_span.get("data-tooltip", set_code))
                 
                 # Card number from the 2nd <td>
-                card_number = cells[1].find("a").text.strip()
+                number_link = cells[1].find("a")
+                if number_link is None:
+                    continue
+                card_number = number_link.text.strip()
                 
                 card_id = f"{raw_name}-{set_code}-{card_number}".replace(" ", "-").lower()
                 
@@ -85,7 +93,7 @@ def scrape_limitless():
                     # First time seeing this card, create the full object
                     scraped_cards[card_id] = {
                         "id": card_id,
-                        "eyebrowLabel": f"{raw_name.upper()} • {set_name.upper()}",
+                        "eyebrowLabel": f"{raw_name.upper()} • {set_name.upper()} • {card_number.upper()}",
                         "displayTitle": raw_name,
                         "imageUrl": image_url,
                         "tags": [tab_name, set_code.upper()]
