@@ -192,73 +192,112 @@
       }).join('');
     }
 
-    function updateView() {
-          displayTitle.innerText = activeTab;
-          const isArtist = ['Sekio', 'Asako Ito', 'Ooyama', 'Ryoma Uratsuka', 'Yuka Morii', 'Tomokazu Komiya'].includes(activeTab);
-          eyebrow.innerText = isArtist ? "Artist Focus" : "Species Focus";
+function updateView() {
+      displayTitle.innerText = activeTab;
+      const isArtist = ['Sekio', 'Asako Ito', 'Ooyama', 'Ryoma Uratsuka', 'Yuka Morii', 'Tomokazu Komiya'].includes(activeTab);
+      eyebrow.innerText = isArtist ? "Artist Focus" : "Species Focus";
 
-          // 1. Grab cards directly from the active tab list
-          let cards = (db[activeTab] || []).slice();
+      let rawCards = (db[activeTab] || []).slice();
 
-          // 2. Limitless defaults to chronological (oldest to newest).
-          // If toggled to newest first, reverse the clean array.
-          if (!sortAscending) {
-            cards.reverse();
-          }
+      // 1. Extract the unique sets in the exact order Limitless provided them
+      const uniqueSets = [...new Set(rawCards.map(c => {
+        const parts = c.eyebrowLabel.split('•');
+        return parts[1] ? parts[1].trim() : "UNKNOWN";
+      }))];
 
-          // 3. Stats Calculation
-          let total = cards.length;
-          let collected = 0;
-          let foil = 0;
+      // 2. Only reverse the set order when toggled, keeping cards ascending internally
+      if (!sortAscending) {
+        uniqueSets.reverse();
+      }
 
-          // 4. Render Grid
-          gridContainer.innerHTML = cards.map(card => {
-            const state = collection[card.id] || 0;
+      // 3. Rebuild the list by pulling from the original array set-by-set
+      let cards = [];
+      
+      const extractNumber = (label) => {
+        const parts = label.split('•');
+        const numStr = (parts[2] || "").split('/')[0].trim();
+        const match = numStr.match(/^([a-zA-Z]*)(\d*)([a-zA-Z]*)$/);
+        return {
+          prefix: match && match[1] ? match[1].toUpperCase() : "",
+          num: match && match[2] ? parseInt(match[2], 10) : 0,
+          suffix: match && match[3] ? match[3].toUpperCase() : numStr.toUpperCase()
+        };
+      };
 
-            if (state > 0) collected++;
-            if (state === 2) foil++;
+      uniqueSets.forEach(setName => {
+        // Filter out the cards matching this specific set
+        let group = rawCards.filter(c => {
+          const parts = c.eyebrowLabel.split('•');
+          const currentSetName = parts[1] ? parts[1].trim() : "UNKNOWN";
+          return currentSetName === setName;
+        });
+        
+        // ALWAYS sort cards inside the set numerically ascending (0 to X)
+        group.sort((a, b) => {
+          const valA = extractNumber(a.eyebrowLabel);
+          const valB = extractNumber(b.eyebrowLabel);
 
-            let bgClass = "bg-linen-canvas";
-            let hoverLabelBg = "bg-linen-canvas";
-            let textHover = "text-walnut-ink";
-            let borderHover = "border-walnut-ink";
-            let statusBadge = "";
+          if (valA.prefix !== valB.prefix) return valA.prefix.localeCompare(valB.prefix);
+          if (valA.num !== valB.num) return valA.num - valB.num;
+          return valA.suffix.localeCompare(valB.suffix);
+        });
 
-            if (state === 1) {
-              bgClass = "bg-[#d9cfc1]";
-            } else if (state === 2) {
-              bgClass = "bg-walnut-ink";
-              hoverLabelBg = "bg-walnut-ink";
-              textHover = "text-linen-canvas";
-              borderHover = "border-linen-canvas";
-              statusBadge = `
-                <div class="absolute top-3 right-3 border border-linen-canvas text-linen-canvas px-2 py-1">
-                  <span class="block font-bwgradual font-medium text-[8px] tracking-[0.1em] uppercase">Foil</span>
-                </div>
-              `;
-            }
+        cards.push(...group);
+      });
 
-            return `
-              <article onclick="toggleCardState('${card.id}')" class="aspect-square border border-walnut-ink ${bgClass} flex items-center justify-center relative group cursor-pointer transition-colors duration-300">
-                <img
-                  src="${card.imageUrl}"
-                  alt="${card.displayTitle}"
-                  loading="lazy"
-                  class="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105"
-                />
-                ${statusBadge}
-                <div class="absolute bottom-0 w-full border-t ${borderHover} ${hoverLabelBg} p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span class="block text-center font-bwgradual font-medium text-[10px] tracking-[0.1em] uppercase ${textHover}">
-                    ${card.eyebrowLabel}
-                  </span>
-                </div>
-              </article>
-            `;
-          }).join('');
+      // 4. Stats Calculation
+      let total = cards.length;
+      let collected = 0;
+      let foil = 0;
 
-          statsEl.innerText = `${collected}/${total} COLLECTED — ${foil} FOIL`;
+      // 5. Render Grid
+      gridContainer.innerHTML = cards.map(card => {
+        const state = collection[card.id] || 0;
+
+        if (state > 0) collected++;
+        if (state === 2) foil++;
+
+        let bgClass = "bg-linen-canvas";
+        let hoverLabelBg = "bg-linen-canvas";
+        let textHover = "text-walnut-ink";
+        let borderHover = "border-walnut-ink";
+        let statusBadge = "";
+
+        if (state === 1) {
+          bgClass = "bg-[#d9cfc1]";
+        } else if (state === 2) {
+          bgClass = "bg-walnut-ink";
+          hoverLabelBg = "bg-walnut-ink";
+          textHover = "text-linen-canvas";
+          borderHover = "border-linen-canvas";
+          statusBadge = `
+            <div class="absolute top-3 right-3 border border-linen-canvas text-linen-canvas px-2 py-1">
+              <span class="block font-bwgradual font-medium text-[8px] tracking-[0.1em] uppercase">Foil</span>
+            </div>
+          `;
         }
 
+        return `
+          <article onclick="toggleCardState('${card.id}')" class="aspect-square border border-walnut-ink ${bgClass} flex items-center justify-center relative group cursor-pointer transition-colors duration-300">
+            <img
+              src="${card.imageUrl}"
+              alt="${card.displayTitle}"
+              loading="lazy"
+              class="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105"
+            />
+            ${statusBadge}
+            <div class="absolute bottom-0 w-full border-t ${borderHover} ${hoverLabelBg} p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <span class="block text-center font-bwgradual font-medium text-[10px] tracking-[0.1em] uppercase ${textHover}">
+                ${card.eyebrowLabel}
+              </span>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      statsEl.innerText = `${collected}/${total} COLLECTED — ${foil} FOIL`;
+    }
+    
     init();
   </script>
 </body>
