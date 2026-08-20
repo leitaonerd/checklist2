@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pokémon × Checklist</title>
-  
+
   <!-- BwGradual Alternative: Using Inter with CV11 for that clean geometric look -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-  
+
   <!-- Tailwind CSS via CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
+
   <!-- Oakâme Tailwind Configuration -->
   <script>
     tailwind.config = {
@@ -24,13 +24,13 @@
             'charcoal-note': '#333333',
           },
           fontFamily: {
-            'bwgradual': ['Inter', 'sans-serif'], 
+            'bwgradual': ['Inter', 'sans-serif'],
           }
         }
       }
     }
   </script>
-  
+
   <style>
     body {
       background-color: #f6f1eb;
@@ -64,7 +64,7 @@
 
   <!-- Main Content Area -->
   <main class="max-w-[1600px] w-full mx-auto px-5 py-[60px] md:py-[120px] flex-grow">
-    
+
     <!-- Header Block (Eyebrow, Title, Stats, and Sort Action) -->
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-[60px] md:mb-[120px]">
       <div>
@@ -91,21 +91,21 @@
     <div id="grid-container" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-[20px]">
       <!-- Cards injected via JS -->
     </div>
-    
+
   </main>
 
   <script>
     // Configuration & State
     const tabs = [
-      'Sekio', 'Asako Ito', 'Ooyama', 'Ryoma Uratsuka', 
-      'Yuka Morii', 'Tomokazu Komiya', 
+      'Sekio', 'Asako Ito', 'Ooyama', 'Ryoma Uratsuka',
+      'Yuka Morii', 'Tomokazu Komiya',
       'Clefairy', 'Dedenne', 'Wooper', 'Tandemaus & Maushold'
     ];
-    
+
     let db = [];
     let activeTab = tabs[0];
     let sortAscending = true; // true = Oldest to Newest
-    
+
     // Load local storage collection (0 = None, 1 = Normal, 2 = Foil)
     let collection = {};
 
@@ -128,7 +128,7 @@
 
         db = await dbResponse.json();
         const serverCollection = await colResponse.json();
-        
+
         // Merge server state with any newer local clicks
         const localCollection = JSON.parse(localStorage.getItem('oakame_pokemon_collection')) || {};
         collection = { ...serverCollection, ...localCollection };
@@ -141,86 +141,27 @@
         }
     }
 
-    // Replace with your actual GitHub username and repo name
-    const GITHUB_REPO = "leitaonerd/checklist2"; 
+    window.exportCollection = () => {
+      // Convert your collection object into a formatted JSON string
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(collection, null, 2));
 
-    window.exportCollection = async () => {
-    // 1. Get or request the token
-    let token = localStorage.getItem('gh_pat_token');
-    if (!token) {
-        token = prompt("🔒 Enter your GitHub Personal Access Token to sync:");
-        if (!token) return; // User cancelled
-        localStorage.setItem('gh_pat_token', token);
-    }
-
-    // Change button text to show activity
-    const exportBtn = document.getElementById('export-btn');
-    exportBtn.innerText = "SYNCING...";
-
-    try {
-        const fileUrl = `https://api.github.com/repos/${GITHUB_REPO}/contents/collection.json`;
-        
-        // 2. We must get the file's current "SHA" hash first. GitHub requires this to overwrite a file.
-        const getResponse = await fetch(fileUrl, {
-        headers: { "Authorization": `token ${token}` }
-        });
-        
-        let fileSha = null;
-        if (getResponse.ok) {
-        const data = await getResponse.json();
-        fileSha = data.sha;
-        } else if (getResponse.status !== 404) {
-        throw new Error("Could not fetch file SHA.");
-        }
-
-        // 3. Prepare the new JSON payload (GitHub requires Base64 encoding)
-        const jsonString = JSON.stringify(collection, null, 2);
-        // Safe Base64 encoding for browsers that handles special characters properly
-        const base64Content = btoa(unescape(encodeURIComponent(jsonString)));
-
-        // 4. Send the PUT request to commit the file
-        const putResponse = await fetch(fileUrl, {
-        method: "PUT",
-        headers: {
-            "Authorization": `token ${token}`,
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            message: "Sync collection state via Web App",
-            content: base64Content,
-            sha: fileSha // Omit if creating the file for the very first time
-        })
-        });
-
-        if (putResponse.ok) {
-        exportBtn.innerText = "SYNCED ✓";
-        setTimeout(() => exportBtn.innerText = "EXPORTAR", 2000);
-        } else {
-        const errorData = await putResponse.json();
-        // If the token is invalid or expired, clear it so the user is prompted again next time
-        if (errorData.message === "Bad credentials") {
-            localStorage.removeItem('gh_pat_token');
-            alert("Token invalid or expired. Please click export again to enter a new token.");
-        } else {
-            alert(`GitHub API Error: ${errorData.message}`);
-        }
-        exportBtn.innerText = "EXPORTAR";
-        }
-    } catch (error) {
-        console.error(error);
-        alert("Network error while trying to sync.");
-        exportBtn.innerText = "EXPORTAR";
-    }
+      // Create a hidden link, trigger the download, and remove it
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href", dataStr);
+      downloadAnchorNode.setAttribute("download", "collection.json");
+      document.body.appendChild(downloadAnchorNode); // Required for Firefox
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
     };
 
     function renderTabs() {
       tabBar.innerHTML = tabs.map(tab => {
         const isActive = tab === activeTab;
         const baseClasses = "px-6 py-4 border-r border-walnut-ink flex-shrink-0 cursor-pointer transition-colors";
-        const stateClasses = isActive 
-          ? "bg-walnut-ink text-linen-canvas" 
+        const stateClasses = isActive
+          ? "bg-walnut-ink text-linen-canvas"
           : "hover:bg-walnut-ink hover:text-linen-canvas text-walnut-ink";
-          
+
         return `
           <button onclick="setActiveTab('${tab}')" class="${baseClasses} ${stateClasses}">
             <span class="font-bwgradual font-medium text-[12px] tracking-[0.083em] uppercase">
@@ -260,24 +201,24 @@
         const query = activeTab.toLowerCase();
         const tagsLower = card.tags.map(t => t.toLowerCase());
         const titleLower = card.displayTitle.toLowerCase();
-        
+
         if (query === 'tandemaus & maushold') {
-          return titleLower.includes('tandemaus') || titleLower.includes('maushold') || 
+          return titleLower.includes('tandemaus') || titleLower.includes('maushold') ||
                  tagsLower.includes('tandemaus') || tagsLower.includes('maushold');
         }
         return tagsLower.includes(query) || titleLower.includes(query);
       });
 
       // 2. Sort Logic (Reverses sets, but keeps numerical order within the set)
-      const uniqueSets = [...new Set(filteredCards.map(c => c.tags[1]))]; 
+      const uniqueSets = [...new Set(filteredCards.map(c => c.tags[1]))];
       if (!sortAscending) {
         uniqueSets.reverse(); // Newest sets first
       }
-      
+
       let sortedCards = [];
       uniqueSets.forEach(setTag => {
         let cardsInSet = filteredCards.filter(c => c.tags[1] === setTag);
-        
+
         // --- THE BULLETPROOF SORT ---
         cardsInSet.sort((a, b) => {
           // 1. If your JSON has the isolated 'cardNumber' property we added, use it directly!
@@ -289,10 +230,10 @@
           const getNumStr = (label) => {
             const parts = label.split(/[-•—]/);
             // Grab the very last piece (e.g., " 238/193") and trim the spaces
-            return parts[parts.length - 1].trim(); 
+            return parts[parts.length - 1].trim();
           };
-          
-          // localeCompare with 'numeric: true' naturally understands how to sort 
+
+          // localeCompare with 'numeric: true' naturally understands how to sort
           // fractional strings like "12/100" vs "2/100" and promo strings like "TG04".
           return getNumStr(a.eyebrowLabel).localeCompare(getNumStr(b.eyebrowLabel), undefined, { numeric: true });
         });
@@ -310,7 +251,7 @@
       // 4. Render Grid
       gridContainer.innerHTML = filteredCards.map(card => {
         const state = collection[card.id] || 0;
-        
+
         if (state > 0) collected++;
         if (state === 2) foil++;
 
@@ -323,7 +264,7 @@
 
         if (state === 1) {
           // Normal Collected: Subtle background tint
-          bgClass = "bg-[#d9cfc1]"; 
+          bgClass = "bg-[#d9cfc1]";
         } else if (state === 2) {
           // Foil Collected: Heavy Walnut Ink inversion
           bgClass = "bg-walnut-ink";
@@ -339,13 +280,13 @@
 
         return `
           <article onclick="toggleCardState('${card.id}')" class="aspect-square border border-walnut-ink ${bgClass} flex items-center justify-center relative group cursor-pointer transition-colors duration-300">
-            <img 
-              src="${card.imageUrl}" 
+            <img
+              src="${card.imageUrl}"
               alt="${card.displayTitle}"
               loading="lazy"
-              class="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105" 
+              class="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105"
             />
-            
+
             ${statusBadge}
 
             <!-- Hover label -->
