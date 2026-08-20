@@ -193,61 +193,71 @@
     }
 
     function updateView() {
-          filteredCards.sort((a, b) => {
-          // Step A: Compare the Sets
-          let setA = a.tags[1].toUpperCase();
-          let setB = b.tags[1].toUpperCase();
+          displayTitle.innerText = activeTab;
+          const isArtist = ['Sekio', 'Asako Ito', 'Ooyama', 'Ryoma Uratsuka', 'Yuka Morii', 'Tomokazu Komiya'].includes(activeTab);
+          eyebrow.innerText = isArtist ? "Artist Focus" : "Species Focus";
 
-          if (setA !== setB) {
-            let indexA = SET_ORDER.indexOf(setA);
-            let indexB = SET_ORDER.indexOf(setB);
+          // 1. Grab cards directly from the active tab list
+          let cards = (db[activeTab] || []).slice();
 
-            if (indexA === -1 && indexB === -1) return setA.localeCompare(setB);
-            if (indexA === -1) return 1;
-            if (indexB === -1) return -1;
-
-            return sortAscending ? (indexB - indexA) : (indexA - indexB);
+          // 2. Limitless defaults to chronological (oldest to newest).
+          // If toggled to newest first, reverse the clean array.
+          if (!sortAscending) {
+            cards.reverse();
           }
 
-          // Step B: Compare Card Numbers inside the EXACT SAME set
-          const parseNumber = (card) => {
-            // Fallback to label parsing if cardNumber isn't in your JSON format
-            let numStr = card.cardNumber || "";
-            if (!numStr) {
-              const parts = card.eyebrowLabel.split(/[•·\-—]/);
-              numStr = (parts[parts.length - 1] || "").split('/')[0].trim();
-            } else {
-              numStr = numStr.split('/')[0].trim();
+          // 3. Stats Calculation
+          let total = cards.length;
+          let collected = 0;
+          let foil = 0;
+
+          // 4. Render Grid
+          gridContainer.innerHTML = cards.map(card => {
+            const state = collection[card.id] || 0;
+
+            if (state > 0) collected++;
+            if (state === 2) foil++;
+
+            let bgClass = "bg-linen-canvas";
+            let hoverLabelBg = "bg-linen-canvas";
+            let textHover = "text-walnut-ink";
+            let borderHover = "border-walnut-ink";
+            let statusBadge = "";
+
+            if (state === 1) {
+              bgClass = "bg-[#d9cfc1]";
+            } else if (state === 2) {
+              bgClass = "bg-walnut-ink";
+              hoverLabelBg = "bg-walnut-ink";
+              textHover = "text-linen-canvas";
+              borderHover = "border-linen-canvas";
+              statusBadge = `
+                <div class="absolute top-3 right-3 border border-linen-canvas text-linen-canvas px-2 py-1">
+                  <span class="block font-bwgradual font-medium text-[8px] tracking-[0.1em] uppercase">Foil</span>
+                </div>
+              `;
             }
 
-            // Tars the string into Prefix (Letters), Number, and Suffix (Letters)
-            // "TG04" -> prefix: "TG", num: 4, suffix: ""
-            // "124a" -> prefix: "", num: 124, suffix: "a"
-            const match = numStr.match(/^([a-zA-Z]*)(\d*)([a-zA-Z]*)$/);
+            return `
+              <article onclick="toggleCardState('${card.id}')" class="aspect-square border border-walnut-ink ${bgClass} flex items-center justify-center relative group cursor-pointer transition-colors duration-300">
+                <img
+                  src="${card.imageUrl}"
+                  alt="${card.displayTitle}"
+                  loading="lazy"
+                  class="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105"
+                />
+                ${statusBadge}
+                <div class="absolute bottom-0 w-full border-t ${borderHover} ${hoverLabelBg} p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <span class="block text-center font-bwgradual font-medium text-[10px] tracking-[0.1em] uppercase ${textHover}">
+                    ${card.eyebrowLabel}
+                  </span>
+                </div>
+              </article>
+            `;
+          }).join('');
 
-            return {
-              prefix: match && match[1] ? match[1].toUpperCase() : "",
-              num: match && match[2] ? parseInt(match[2], 10) : 0,
-              suffix: match && match[3] ? match[3].toUpperCase() : numStr.toUpperCase()
-            };
-          };
-
-          const valA = parseNumber(a);
-          const valB = parseNumber(b);
-
-          // 1. Sort by letter prefix ("" comes before "TG")
-          if (valA.prefix !== valB.prefix) {
-            return valA.prefix.localeCompare(valB.prefix);
-          }
-
-          // 2. Sort by actual integer value (4 comes before 12)
-          if (valA.num !== valB.num) {
-            return valA.num - valB.num;
-          }
-
-          // 3. Sort by suffix if numbers are identical (124a vs 124b)
-          return valA.suffix.localeCompare(valB.suffix);
-        });}
+          statsEl.innerText = `${collected}/${total} COLLECTED — ${foil} FOIL`;
+        }
 
     init();
   </script>
