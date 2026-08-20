@@ -94,8 +94,27 @@
 
   </main>
 
-  <script>
-    // Configuration & State
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    // 1. Paste your Firebase configuration here
+    const firebaseConfig = {
+        apiKey: "AIzaSyDWy9iC5bl_m2MU9JLw0rdFL8xsivDIcWU",
+        authDomain: "pokemontracker2.firebaseapp.com",
+        databaseURL: "https://pokemontracker2-default-rtdb.firebaseio.com",
+        projectId: "pokemontracker2",
+        storageBucket: "pokemontracker2.firebasestorage.app",
+        messagingSenderId: "339978180073",
+        appId: "1:339978180073:web:564530ff14c3f289f06778"
+      };
+
+    // 2. Initialize Firebase and Realtime Database
+    const app = initializeApp(firebaseConfig);
+    const rtdb = getDatabase(app);
+    const collectionRef = ref(rtdb, "collection");
+
+    // State
     const tabs = [
       'Sekio', 'Asako Ito', 'Ooyama', 'Ryoma Uratsuka',
       'Yuka Morii', 'Tomokazu Komiya',
@@ -104,9 +123,7 @@
 
     let db = [];
     let activeTab = tabs[0];
-    let sortAscending = true; // true = Oldest to Newest
-
-    // Load local storage collection (0 = None, 1 = Normal, 2 = Foil)
+    let sortAscending = true;
     let collection = {};
 
     // DOM Elements
@@ -119,39 +136,42 @@
 
     // Initialization
     async function init() {
-    try {
-        // Fetch both the Limitless catalog and your personal collection state
-        const [dbResponse, colResponse] = await Promise.all([
-        fetch('pokemon_db.json'),
-        fetch('collection.json').catch(() => ({ json: () => ({}) })) // Fails safely if collection.json doesn't exist yet
-        ]);
+      try {
+        const response = await fetch('pokemon_db.json');
+        db = await response.json();
 
-        db = await dbResponse.json();
-        const serverCollection = await colResponse.json();
-
-        // Merge server state with any newer local clicks
-        const localCollection = JSON.parse(localStorage.getItem('oakame_pokemon_collection')) || {};
-        collection = { ...serverCollection, ...localCollection };
+        // Listen to Realtime Database changes
+        onValue(collectionRef, (snapshot) => {
+          collection = snapshot.val() || {};
+          updateView();
+        });
 
         renderTabs();
-        updateView();
-    } catch (error) {
-        console.error('Error loading databases:', error);
+      } catch (error) {
+        console.error('Error loading database:', error);
         displayTitle.innerText = "Error Loading Database";
-        }
+      }
     }
 
-    window.exportCollection = () => {
-      // Convert your collection object into a formatted JSON string
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(collection, null, 2));
+    // Window actions
+    window.setActiveTab = (tab) => {
+      activeTab = tab;
+      renderTabs();
+      updateView();
+    };
 
-      // Create a hidden link, trigger the download, and remove it
-      const downloadAnchorNode = document.createElement('a');
-      downloadAnchorNode.setAttribute("href", dataStr);
-      downloadAnchorNode.setAttribute("download", "collection.json");
-      document.body.appendChild(downloadAnchorNode); // Required for Firefox
-      downloadAnchorNode.click();
-      downloadAnchorNode.remove();
+    window.toggleSort = () => {
+      sortAscending = !sortAscending;
+      sortBtnText.innerText = sortAscending ? 'ORDER: OLDEST FIRST' : 'ORDER: NEWEST FIRST';
+      updateView();
+    };
+
+    window.toggleCardState = (cardId) => {
+      const currentState = collection[cardId] || 0;
+      const newState = (currentState + 1) % 3;
+
+      // Updates only the clicked card path directly in RTDB
+      set(ref(rtdb, `collection/${cardId}`), newState);
     };
 
     function renderTabs() {
@@ -172,31 +192,11 @@
       }).join('');
     }
 
-    window.setActiveTab = (tab) => {
-      activeTab = tab;
-      renderTabs();
-      updateView();
-    };
-
-    window.toggleSort = () => {
-      sortAscending = !sortAscending;
-      sortBtnText.innerText = sortAscending ? 'ORDER: OLDEST FIRST' : 'ORDER: NEWEST FIRST';
-      updateView();
-    };
-
-    window.toggleCardState = (cardId) => {
-      const currentState = collection[cardId] || 0;
-      collection[cardId] = (currentState + 1) % 3; // Cycles 0 -> 1 -> 2 -> 0
-      localStorage.setItem('oakame_pokemon_collection', JSON.stringify(collection));
-      updateView(); // Re-render the grid to show new state
-    };
-
     function updateView() {
       displayTitle.innerText = activeTab;
       const isArtist = ['Sekio', 'Asako Ito', 'Ooyama', 'Ryoma Uratsuka', 'Yuka Morii', 'Tomokazu Komiya'].includes(activeTab);
       eyebrow.innerText = isArtist ? "Artist Focus" : "Species Focus";
 
-      // 1. Filter
       let filteredCards = db.filter(card => {
         const query = activeTab.toLowerCase();
         const tagsLower = card.tags.map(t => t.toLowerCase());
@@ -209,53 +209,53 @@
         return tagsLower.includes(query) || titleLower.includes(query);
       });
 
-      // 2. Sort Logic (Reverses sets, but keeps numerical order within the set)
-      const uniqueSets = [...new Set(filteredCards.map(c => c.tags[1]))];
-      if (!sortAscending) {
-        uniqueSets.reverse(); // Newest sets first
-      }
+      const SET_ORDER = [
+        "PRE", "SSP", "SCR", "SFA", "TWM", "TEF", "PAF", "PAR", "MEW", "OBF", "PAL", "SVI", "SVP",
+        "CRZ", "SIT", "LOR", "PGO", "ASR", "BRS", "FST", "CEL", "EVS", "CRE", "BST", "SHF", "VIV", "CPA", "DAA", "RCL", "SSH", "SWSH",
+        "CEC", "HIF", "UNM", "UNB", "TEU", "LOT", "DRM", "CES", "FLI", "UPR", "CIN", "SLG", "BUS", "GRI", "SUM", "SMP",
+        "EVO", "STS", "FCO", "GEN", "BKP", "BKT", "AOR", "ROS", "PRC", "PHF", "FFI", "FLF", "XY", "XYP",
+        "LTR", "PLB", "PLF", "PLS", "BCR", "DRX", "DEX", "NXD", "NVI", "EPO", "BLW", "BWP",
+        "CL", "TM", "UD", "UL", "HS", "HSP",
+        "AR", "SV", "RR", "PL", "SF", "LA", "MD", "GE", "SW", "MT", "DP", "DPP",
+        "PK", "DF", "CG", "HP", "LM", "DS", "UF", "EM", "DX", "TRR", "FL", "HL", "MA", "DR", "SS", "RS",
+        "SK", "AQ", "EX", "N4", "N3", "N2", "N1", "G2", "G1", "TR", "FO", "JU", "BS", "PR"
+      ];
 
-      let sortedCards = [];
-      uniqueSets.forEach(setTag => {
-        let cardsInSet = filteredCards.filter(c => c.tags[1] === setTag);
+      filteredCards.sort((a, b) => {
+        let setA = a.tags[1].toUpperCase();
+        let setB = b.tags[1].toUpperCase();
 
-        // --- THE BULLETPROOF SORT ---
-        cardsInSet.sort((a, b) => {
-          // 1. If your JSON has the isolated 'cardNumber' property we added, use it directly!
-          if (a.cardNumber && b.cardNumber) {
-            return a.cardNumber.localeCompare(b.cardNumber, undefined, { numeric: true });
-          }
+        if (setA !== setB) {
+          let indexA = SET_ORDER.indexOf(setA);
+          let indexB = SET_ORDER.indexOf(setB);
 
-          // 2. Fallback: Split the label by ANY possible divider (bullet, hyphen, or em-dash)
-          const getNumStr = (label) => {
-            const parts = label.split(/[-•—]/);
-            // Grab the very last piece (e.g., " 238/193") and trim the spaces
-            return parts[parts.length - 1].trim();
-          };
+          if (indexA === -1 && indexB === -1) return setA.localeCompare(setB);
+          if (indexA === -1) return 1;
+          if (indexB === -1) return -1;
 
-          // localeCompare with 'numeric: true' naturally understands how to sort
-          // fractional strings like "12/100" vs "2/100" and promo strings like "TG04".
-          return getNumStr(a.eyebrowLabel).localeCompare(getNumStr(b.eyebrowLabel), undefined, { numeric: true });
-        });
-        // ----------------------------
+          return sortAscending ? (indexB - indexA) : (indexA - indexB);
+        }
 
-        sortedCards.push(...cardsInSet);
+        const extractSortableNumber = (label) => {
+          const parts = label.split(/[•·\-—]/);
+          const lastPart = parts[parts.length - 1] || "";
+          const printNumber = lastPart.split('/')[0].trim();
+          return printNumber.replace(/\d+/g, match => match.padStart(5, '0'));
+        };
+
+        return extractSortableNumber(a.eyebrowLabel).localeCompare(extractSortableNumber(b.eyebrowLabel));
       });
-      filteredCards = sortedCards;
 
-      // 3. Stats Calculation
       let total = filteredCards.length;
       let collected = 0;
       let foil = 0;
 
-      // 4. Render Grid
       gridContainer.innerHTML = filteredCards.map(card => {
         const state = collection[card.id] || 0;
 
         if (state > 0) collected++;
         if (state === 2) foil++;
 
-        // Determine Oakâme Styling based on collection state
         let bgClass = "bg-linen-canvas";
         let hoverLabelBg = "bg-linen-canvas";
         let textHover = "text-walnut-ink";
@@ -263,10 +263,8 @@
         let statusBadge = "";
 
         if (state === 1) {
-          // Normal Collected: Subtle background tint
           bgClass = "bg-[#d9cfc1]";
         } else if (state === 2) {
-          // Foil Collected: Heavy Walnut Ink inversion
           bgClass = "bg-walnut-ink";
           hoverLabelBg = "bg-walnut-ink";
           textHover = "text-linen-canvas";
@@ -286,10 +284,7 @@
               loading="lazy"
               class="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105"
             />
-
             ${statusBadge}
-
-            <!-- Hover label -->
             <div class="absolute bottom-0 w-full border-t ${borderHover} ${hoverLabelBg} p-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <span class="block text-center font-bwgradual font-medium text-[10px] tracking-[0.1em] uppercase ${textHover}">
                 ${card.eyebrowLabel}
@@ -299,11 +294,9 @@
         `;
       }).join('');
 
-      // Update Stats UI
       statsEl.innerText = `${collected}/${total} COLLECTED — ${foil} FOIL`;
     }
 
-    // Boot
     init();
   </script>
 </body>
