@@ -278,7 +278,7 @@ function updateView() {
         }
 
         return `
-          <article onclick="toggleCardState('${card.id}')" class="aspect-square border border-walnut-ink ${bgClass} flex items-center justify-center relative group cursor-pointer transition-colors duration-300">
+          <article onclick="toggleCardState(this.dataset.id)" data-id="${card.id}" class="aspect-square border border-walnut-ink ${bgClass} flex items-center justify-center relative group cursor-pointer transition-colors duration-300">
             <img
               src="${card.imageUrl}"
               alt="${card.displayTitle}"
@@ -297,7 +297,7 @@ function updateView() {
 
       statsEl.innerText = `${collected}/${total} COLLECTED — ${foil} FOIL`;
     }
-    
+
     init();
   </script>
 </body>
