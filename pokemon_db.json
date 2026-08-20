@@ -4295,5 +4295,96 @@
       "imageUrl": "https://images.pokemontcg.io/neo1/82.png"
     }
   ],
-  "Tandemaus & Maushold": []
+  "Tandemaus & Maushold": [
+    {
+      "id": "tandemaus-ssp-157",
+      "eyebrowLabel": "TANDEMAUS • SURGING SPARKS • 157",
+      "displayTitle": "Tandemaus",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/SSP/SSP_157_R_EN_XS.png"
+    },
+    {
+      "id": "tandemaus-paf-73",
+      "eyebrowLabel": "TANDEMAUS • PALDEAN FATES • 73",
+      "displayTitle": "Tandemaus",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAF/PAF_073_R_EN_XS.png"
+    },
+    {
+      "id": "tandemaus-paf-209",
+      "eyebrowLabel": "TANDEMAUS • PALDEAN FATES • 209",
+      "displayTitle": "Tandemaus",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAF/PAF_209_R_EN_XS.png"
+    },
+    {
+      "id": "tandemaus-par-153",
+      "eyebrowLabel": "TANDEMAUS • PARADOX RIFT • 153",
+      "displayTitle": "Tandemaus",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAR/PAR_153_R_EN_XS.png"
+    },
+    {
+      "id": "tandemaus-par-154",
+      "eyebrowLabel": "TANDEMAUS • PARADOX RIFT • 154",
+      "displayTitle": "Tandemaus",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAR/PAR_154_R_EN_XS.png"
+    },
+    {
+      "id": "tandemaus-pal-166",
+      "eyebrowLabel": "TANDEMAUS • PALDEA EVOLVED • 166",
+      "displayTitle": "Tandemaus",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAL/PAL_166_R_EN_XS.png"
+    },
+    {
+      "id": "tandemaus-pal-167",
+      "eyebrowLabel": "TANDEMAUS • PALDEA EVOLVED • 167",
+      "displayTitle": "Tandemaus",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAL/PAL_167_R_EN_XS.png"
+    },
+    {
+      "id": "tandemaus-svi-159",
+      "eyebrowLabel": "TANDEMAUS • SCARLET & VIOLET • 159",
+      "displayTitle": "Tandemaus",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/SVI/SVI_159_R_EN_XS.png"
+    },
+    {
+      "id": "tandemaus-svi-160",
+      "eyebrowLabel": "TANDEMAUS • SCARLET & VIOLET • 160",
+      "displayTitle": "Tandemaus",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/SVI/SVI_160_R_EN_XS.png"
+    },
+    {
+      "id": "maushold-ssp-158",
+      "eyebrowLabel": "MAUSHOLD • SURGING SPARKS • 158",
+      "displayTitle": "Maushold",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/SSP/SSP_158_R_EN_XS.png"
+    },
+    {
+      "id": "maushold-paf-74",
+      "eyebrowLabel": "MAUSHOLD • PALDEAN FATES • 74",
+      "displayTitle": "Maushold",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAF/PAF_074_R_EN_XS.png"
+    },
+    {
+      "id": "maushold-paf-210",
+      "eyebrowLabel": "MAUSHOLD • PALDEAN FATES • 210",
+      "displayTitle": "Maushold",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAF/PAF_210_R_EN_XS.png"
+    },
+    {
+      "id": "maushold-pal-168",
+      "eyebrowLabel": "MAUSHOLD • PALDEA EVOLVED • 168",
+      "displayTitle": "Maushold",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAL/PAL_168_R_EN_XS.png"
+    },
+    {
+      "id": "maushold-pal-226",
+      "eyebrowLabel": "MAUSHOLD • PALDEA EVOLVED • 226",
+      "displayTitle": "Maushold",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/PAL/PAL_226_R_EN_XS.png"
+    },
+    {
+      "id": "maushold-svi-161",
+      "eyebrowLabel": "MAUSHOLD • SCARLET & VIOLET • 161",
+      "displayTitle": "Maushold",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/SVI/SVI_161_R_EN_XS.png"
+    }
+  ]
 }
