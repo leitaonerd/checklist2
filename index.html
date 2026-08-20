@@ -193,109 +193,61 @@
     }
 
     function updateView() {
-      displayTitle.innerText = activeTab;
-      const isArtist = ['Sekio', 'Asako Ito', 'Ooyama', 'Ryoma Uratsuka', 'Yuka Morii', 'Tomokazu Komiya'].includes(activeTab);
-      eyebrow.innerText = isArtist ? "Artist Focus" : "Species Focus";
+          filteredCards.sort((a, b) => {
+          // Step A: Compare the Sets
+          let setA = a.tags[1].toUpperCase();
+          let setB = b.tags[1].toUpperCase();
 
-      let filteredCards = db.filter(card => {
-        const query = activeTab.toLowerCase();
-        const tagsLower = card.tags.map(t => t.toLowerCase());
-        const titleLower = card.displayTitle.toLowerCase();
+          if (setA !== setB) {
+            let indexA = SET_ORDER.indexOf(setA);
+            let indexB = SET_ORDER.indexOf(setB);
 
-        if (query === 'tandemaus & maushold') {
-          return titleLower.includes('tandemaus') || titleLower.includes('maushold') ||
-                 tagsLower.includes('tandemaus') || tagsLower.includes('maushold');
-        }
-        return tagsLower.includes(query) || titleLower.includes(query);
-      });
+            if (indexA === -1 && indexB === -1) return setA.localeCompare(setB);
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
 
-      const SET_ORDER = [
-        "PRE", "SSP", "SCR", "SFA", "TWM", "TEF", "PAF", "PAR", "MEW", "OBF", "PAL", "SVI", "SVP",
-        "CRZ", "SIT", "LOR", "PGO", "ASR", "BRS", "FST", "CEL", "EVS", "CRE", "BST", "SHF", "VIV", "CPA", "DAA", "RCL", "SSH", "SWSH",
-        "CEC", "HIF", "UNM", "UNB", "TEU", "LOT", "DRM", "CES", "FLI", "UPR", "CIN", "SLG", "BUS", "GRI", "SUM", "SMP",
-        "EVO", "STS", "FCO", "GEN", "BKP", "BKT", "AOR", "ROS", "PRC", "PHF", "FFI", "FLF", "XY", "XYP",
-        "LTR", "PLB", "PLF", "PLS", "BCR", "DRX", "DEX", "NXD", "NVI", "EPO", "BLW", "BWP",
-        "CL", "TM", "UD", "UL", "HS", "HSP",
-        "AR", "SV", "RR", "PL", "SF", "LA", "MD", "GE", "SW", "MT", "DP", "DPP",
-        "PK", "DF", "CG", "HP", "LM", "DS", "UF", "EM", "DX", "TRR", "FL", "HL", "MA", "DR", "SS", "RS",
-        "SK", "AQ", "EX", "N4", "N3", "N2", "N1", "G2", "G1", "TR", "FO", "JU", "BS", "PR"
-      ];
+            return sortAscending ? (indexB - indexA) : (indexA - indexB);
+          }
 
-      filteredCards.sort((a, b) => {
-        let setA = a.tags[1].toUpperCase();
-        let setB = b.tags[1].toUpperCase();
+          // Step B: Compare Card Numbers inside the EXACT SAME set
+          const parseNumber = (card) => {
+            // Fallback to label parsing if cardNumber isn't in your JSON format
+            let numStr = card.cardNumber || "";
+            if (!numStr) {
+              const parts = card.eyebrowLabel.split(/[•·\-—]/);
+              numStr = (parts[parts.length - 1] || "").split('/')[0].trim();
+            } else {
+              numStr = numStr.split('/')[0].trim();
+            }
 
-        if (setA !== setB) {
-          let indexA = SET_ORDER.indexOf(setA);
-          let indexB = SET_ORDER.indexOf(setB);
+            // Tars the string into Prefix (Letters), Number, and Suffix (Letters)
+            // "TG04" -> prefix: "TG", num: 4, suffix: ""
+            // "124a" -> prefix: "", num: 124, suffix: "a"
+            const match = numStr.match(/^([a-zA-Z]*)(\d*)([a-zA-Z]*)$/);
 
-          if (indexA === -1 && indexB === -1) return setA.localeCompare(setB);
-          if (indexA === -1) return 1;
-          if (indexB === -1) return -1;
+            return {
+              prefix: match && match[1] ? match[1].toUpperCase() : "",
+              num: match && match[2] ? parseInt(match[2], 10) : 0,
+              suffix: match && match[3] ? match[3].toUpperCase() : numStr.toUpperCase()
+            };
+          };
 
-          return sortAscending ? (indexB - indexA) : (indexA - indexB);
-        }
+          const valA = parseNumber(a);
+          const valB = parseNumber(b);
 
-        const extractSortableNumber = (label) => {
-          const parts = label.split(/[•·\-—]/);
-          const lastPart = parts[parts.length - 1] || "";
-          const printNumber = lastPart.split('/')[0].trim();
-          return printNumber.replace(/\d+/g, match => match.padStart(5, '0'));
-        };
+          // 1. Sort by letter prefix ("" comes before "TG")
+          if (valA.prefix !== valB.prefix) {
+            return valA.prefix.localeCompare(valB.prefix);
+          }
 
-        return extractSortableNumber(a.eyebrowLabel).localeCompare(extractSortableNumber(b.eyebrowLabel));
-      });
+          // 2. Sort by actual integer value (4 comes before 12)
+          if (valA.num !== valB.num) {
+            return valA.num - valB.num;
+          }
 
-      let total = filteredCards.length;
-      let collected = 0;
-      let foil = 0;
-
-      gridContainer.innerHTML = filteredCards.map(card => {
-        const state = collection[card.id] || 0;
-
-        if (state > 0) collected++;
-        if (state === 2) foil++;
-
-        let bgClass = "bg-linen-canvas";
-        let hoverLabelBg = "bg-linen-canvas";
-        let textHover = "text-walnut-ink";
-        let borderHover = "border-walnut-ink";
-        let statusBadge = "";
-
-        if (state === 1) {
-          bgClass = "bg-[#d9cfc1]";
-        } else if (state === 2) {
-          bgClass = "bg-walnut-ink";
-          hoverLabelBg = "bg-walnut-ink";
-          textHover = "text-linen-canvas";
-          borderHover = "border-linen-canvas";
-          statusBadge = `
-            <div class="absolute top-3 right-3 border border-linen-canvas text-linen-canvas px-2 py-1">
-              <span class="block font-bwgradual font-medium text-[8px] tracking-[0.1em] uppercase">Foil</span>
-            </div>
-          `;
-        }
-
-        return `
-          <article onclick="toggleCardState('${card.id}')" class="aspect-square border border-walnut-ink ${bgClass} flex items-center justify-center relative group cursor-pointer transition-colors duration-300">
-            <img
-              src="${card.imageUrl}"
-              alt="${card.displayTitle}"
-              loading="lazy"
-              class="w-full h-full object-contain p-4 transition-transform duration-300 group-hover:scale-105"
-            />
-            ${statusBadge}
-            <div class="absolute bottom-0 w-full border-t ${borderHover} ${hoverLabelBg} p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <span class="block text-center font-bwgradual font-medium text-[10px] tracking-[0.1em] uppercase ${textHover}">
-                ${card.eyebrowLabel}
-              </span>
-            </div>
-          </article>
-        `;
-      }).join('');
-
-      statsEl.innerText = `${collected}/${total} COLLECTED — ${foil} FOIL`;
-    }
+          // 3. Sort by suffix if numbers are identical (124a vs 124b)
+          return valA.suffix.localeCompare(valB.suffix);
+        });}
 
     init();
   </script>
