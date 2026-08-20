@@ -13,7 +13,7 @@ def scrape_limitless():
         {"queries": ["!artist:tomokazu_komiya"], "tab_name": "Tomokazu Komiya"},
         {"queries": ['name:"clefairy"'], "tab_name": "Clefairy"},
         {"queries": ['name:"dedenne"'], "tab_name": "Dedenne"},
-        {"queries": ['name:"wooper"'], "tab_name": "Wooper"},
+        {"queries": ['wooper'], "tab_name": "Wooper"},
         {"queries": ['name:"tandemaus"', 'name:"maushold"'], "tab_name": "Tandemaus & Maushold"}
     ]
 
