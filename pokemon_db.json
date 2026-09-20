@@ -441,6 +441,12 @@
   ],
   "Asako Ito": [
     {
+      "id": "pikachu-30c-27",
+      "eyebrowLabel": "PIKACHU • 30TH CELEBRATION • 27",
+      "displayTitle": "Pikachu",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_027_R_EN_XS.png"
+    },
+    {
       "id": "wailmer-pbl-15",
       "eyebrowLabel": "WAILMER • PITCH BLACK • 15",
       "displayTitle": "Wailmer",
@@ -659,6 +665,12 @@
   ],
   "Ooyama": [
     {
+      "id": "pikachu-30c-43",
+      "eyebrowLabel": "PIKACHU • 30TH CELEBRATION • 43",
+      "displayTitle": "Pikachu",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_043_R_EN_XS.png"
+    },
+    {
       "id": "cubchoo-blk-25",
       "eyebrowLabel": "CUBCHOO • BLACK BOLT • 25",
       "displayTitle": "Cubchoo",
@@ -828,6 +840,12 @@
     }
   ],
   "Ryoma Uratsuka": [
+    {
+      "id": "minior-30c-124",
+      "eyebrowLabel": "MINIOR • 30TH CELEBRATION • 124",
+      "displayTitle": "Minior",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_124_R_EN_XS.png"
+    },
     {
       "id": "maschiff-pbl-57",
       "eyebrowLabel": "MASCHIFF • PITCH BLACK • 57",
@@ -1142,6 +1160,24 @@
     }
   ],
   "Yuka Morii": [
+    {
+      "id": "poké-pad-30c-126",
+      "eyebrowLabel": "POKÉ PAD • 30TH CELEBRATION • 126",
+      "displayTitle": "Poké Pad",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_126_R_EN_XS.png"
+    },
+    {
+      "id": "switch-30c-127",
+      "eyebrowLabel": "SWITCH • 30TH CELEBRATION • 127",
+      "displayTitle": "Switch",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_127_R_EN_XS.png"
+    },
+    {
+      "id": "ultra-ball-30c-128",
+      "eyebrowLabel": "ULTRA BALL • 30TH CELEBRATION • 128",
+      "displayTitle": "Ultra Ball",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_128_R_EN_XS.png"
+    },
     {
       "id": "mankey-pbl-42",
       "eyebrowLabel": "MANKEY • PITCH BLACK • 42",
@@ -2386,6 +2422,12 @@
     }
   ],
   "Tomokazu Komiya": [
+    {
+      "id": "pikachu-30c-32",
+      "eyebrowLabel": "PIKACHU • 30TH CELEBRATION • 32",
+      "displayTitle": "Pikachu",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_032_R_EN_XS.png"
+    },
     {
       "id": "charcadet-pfl-19",
       "eyebrowLabel": "CHARCADET • PHANTASMAL FLAMES • 19",
@@ -4409,6 +4451,18 @@
       "eyebrowLabel": "TANDEMAUS • SCARLET & VIOLET • 160",
       "displayTitle": "Tandemaus",
       "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/SVI/SVI_160_R_EN_XS.png"
+    },
+    {
+      "id": "maushold-30c-125",
+      "eyebrowLabel": "MAUSHOLD • 30TH CELEBRATION • 125",
+      "displayTitle": "Maushold",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_125_R_EN_XS.png"
+    },
+    {
+      "id": "maushold-30c-146",
+      "eyebrowLabel": "MAUSHOLD • 30TH CELEBRATION • 146",
+      "displayTitle": "Maushold",
+      "imageUrl": "https://limitlesstcg.nyc3.cdn.digitaloceanspaces.com/tpci/30C/30C_146_R_EN_XS.png"
     },
     {
       "id": "maushold-ssp-158",
