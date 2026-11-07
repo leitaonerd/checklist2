@@ -10,7 +10,7 @@ def scrape_limitless():
         {"queries": ["!artist:ooyama"], "tab_name": "Ooyama"},
         {"queries": ["!artist:ryoma_uratsuka"], "tab_name": "Ryoma Uratsuka"},
         {"queries": ["!artist:yuka_morii"], "tab_name": "Yuka Morii"},
-        {"queries": ["!artist:tomokazu_komiya"], "tab_name": "Tomokazu Komiya"},
+        {"queries": ["!artist:tomokazu_komiya"], "tab_name": "Tomokazu"},
         {"queries": ['name:"clefairy"'], "tab_name": "Clefairy"},
         {"queries": ['name:"dedenne"'], "tab_name": "Dedenne"},
         {"queries": ['wooper'], "tab_name": "Wooper"},

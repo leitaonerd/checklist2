@@ -36,22 +36,12 @@
       background-color: #f6f1eb;
       font-feature-settings: "cv11", "ss01", "tnum";
     }
-    #tab-bar::-webkit-scrollbar {
-      height: 6px;
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
     }
-    #tab-bar::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    #tab-bar::-webkit-scrollbar-thumb {
-      background: rgba(64, 58, 52, 0.3);
-      border-radius: 3px;
-    }
-    #tab-bar::-webkit-scrollbar-thumb:hover {
-      background: rgba(64, 58, 52, 0.6);
-    }
-    #tab-bar {
-      scrollbar-width: thin;
-      scrollbar-color: rgba(64, 58, 52, 0.3) transparent;
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
     }
   </style>
 </head>
@@ -67,7 +57,7 @@
   </header>
 
   <!-- Bordered Square Tab Bar -->
-  <nav id="tab-bar" class="w-full border-b border-walnut-ink flex overflow-x-auto bg-linen-canvas">
+  <nav id="tab-bar" class="w-full border-b border-walnut-ink flex overflow-x-auto no-scrollbar bg-linen-canvas">
     <!-- Tabs injected via JS -->
   </nav>
 
@@ -126,7 +116,7 @@
     // State
     const tabs = [
       'Sekio', 'Asako Ito', 'Ooyama', 'Ryoma Uratsuka',
-      'Yuka Morii', 'Tomokazu Komiya',
+      'Yuka Morii', 'Tomokazu',
       'Clefairy', 'Dedenne', 'Wooper', 'Tandemaus & Maushold',
       'Pikachu', 'Marill'
     ];
