@@ -14,7 +14,9 @@ def scrape_limitless():
         {"queries": ['name:"clefairy"'], "tab_name": "Clefairy"},
         {"queries": ['name:"dedenne"'], "tab_name": "Dedenne"},
         {"queries": ['wooper'], "tab_name": "Wooper"},
-        {"queries": ['name:"tandemaus"', 'name:"maushold"'], "tab_name": "Tandemaus & Maushold"}
+        {"queries": ['name:"tandemaus"', 'name:"maushold"'], "tab_name": "Tandemaus & Maushold"},
+        {"queries": ['name:"pikachu" set:"30th celebration"'], "tab_name": "30th Celebration Collection Pikachu", "skip_card_prefixes": ["CC"]},
+        {"queries": ['name:"marill"'], "tab_name": "Marill"}
     ]
 
     database_by_tab = {}
@@ -65,6 +67,13 @@ def scrape_limitless():
 
                     card_number = cells[1].find("a").text.strip()
                     card_number_full = cells[1].text.strip().replace(" ", "")
+
+                    # Optionally skip cards whose number starts with a given prefix
+                    # (e.g. "CC" promo/collection cards) to keep a tab to an exact count
+                    skip_prefixes = target.get("skip_card_prefixes", [])
+                    if any(card_number_full.startswith(prefix) for prefix in skip_prefixes):
+                        continue
+
                     card_id = f"{raw_name}-{set_code}-{card_number}".replace(" ", "-").lower()
 
                     # Append directly without checking for duplicates
