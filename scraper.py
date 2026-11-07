@@ -15,7 +15,7 @@ def scrape_limitless():
         {"queries": ['name:"dedenne"'], "tab_name": "Dedenne"},
         {"queries": ['wooper'], "tab_name": "Wooper"},
         {"queries": ['name:"tandemaus"', 'name:"maushold"'], "tab_name": "Tandemaus & Maushold"},
-        {"queries": ['name:"pikachu" set:"30th celebration"'], "tab_name": "30th Celebration Collection Pikachu", "skip_card_prefixes": ["CC"]},
+        {"queries": ['name:"pikachu" set:"30th celebration"'], "tab_name": "Pikachu", "skip_card_prefixes": ["CC"]},
         {"queries": ['name:"marill"'], "tab_name": "Marill"}
     ]
 

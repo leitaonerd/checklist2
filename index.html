@@ -36,12 +36,22 @@
       background-color: #f6f1eb;
       font-feature-settings: "cv11", "ss01", "tnum";
     }
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
+    #tab-bar::-webkit-scrollbar {
+      height: 6px;
     }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+    #tab-bar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    #tab-bar::-webkit-scrollbar-thumb {
+      background: rgba(64, 58, 52, 0.3);
+      border-radius: 3px;
+    }
+    #tab-bar::-webkit-scrollbar-thumb:hover {
+      background: rgba(64, 58, 52, 0.6);
+    }
+    #tab-bar {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(64, 58, 52, 0.3) transparent;
     }
   </style>
 </head>
@@ -57,7 +67,7 @@
   </header>
 
   <!-- Bordered Square Tab Bar -->
-  <nav id="tab-bar" class="w-full border-b border-walnut-ink flex overflow-x-auto no-scrollbar bg-linen-canvas">
+  <nav id="tab-bar" class="w-full border-b border-walnut-ink flex overflow-x-auto bg-linen-canvas">
     <!-- Tabs injected via JS -->
   </nav>
 
@@ -118,7 +128,7 @@
       'Sekio', 'Asako Ito', 'Ooyama', 'Ryoma Uratsuka',
       'Yuka Morii', 'Tomokazu Komiya',
       'Clefairy', 'Dedenne', 'Wooper', 'Tandemaus & Maushold',
-      '30th Celebration Collection Pikachu', 'Marill'
+      'Pikachu', 'Marill'
     ];
 
     let db = [];
@@ -184,7 +194,7 @@
 
         return `
           <button onclick="setActiveTab('${tab}')" class="${baseClasses} ${stateClasses}">
-            <span class="font-bwgradual font-medium text-[12px] tracking-[0.083em] uppercase">
+            <span class="font-bwgradual font-medium text-[12px] tracking-[0.083em] uppercase whitespace-nowrap">
               ${tab}
             </span>
           </button>
